@@ -8,6 +8,10 @@ import HiScreen from "./screens/hiScreen";
 //import AdminScreen from "./screens/adminScreen";
 import HomeScreen from "./screens/homeScreen";
 import PostScreen from "./screens/postScreen";
+import HouseScreen from "./screens/houseScreen";
+import ShopScreen from "./screens/shopScreen";
+import LandScreen from "./screens/landScreen";
+import ParkScreen from "./screens/parkScreen";
 //import UserAccountScreen from "./screens/userAccountScreen";
 
 
@@ -24,6 +28,11 @@ export default function App() {
         {/* <Stack.Screen name="AdminScreen" component={AdminScreen} /> */}
         <Stack.Screen name="HomeScreen" component={HomeScreen} />
         <Stack.Screen name="PostScreen" component={PostScreen} />
+        <Stack.Screen name="HouseScreen" component={HouseScreen} />
+        <Stack.Screen name="LandScreen" component={LandScreen} />
+        <Stack.Screen name="ShopScreen" component={ShopScreen} />
+        <Stack.Screen name="ParkScreen" component={ParkScreen} />
+
         {/* <Stack.Screen name="UserAccountScreen" component={UserAccountScreen} /> */}
       </Stack.Navigator>
     </NavigationContainer>

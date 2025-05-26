@@ -1,5 +1,4 @@
 import { Picker } from '@react-native-picker/picker';
-import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -25,6 +24,7 @@ export default function CreatePost() {
   const [description, setDescription] = useState('');
   const [location, setLocation] = useState('');
   const [contact, setContact] = useState('');
+  const [email, setEmail] = useState('');
 
   const pickImagesFromAlbum = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -63,27 +63,6 @@ export default function CreatePost() {
     }
   };
 
-  const geocodeLocation = async (loc) => {
-    if (!loc.trim()) return;
-
-    try {
-      const response = await axios.get(
-        `https://maps.googleapis.com/maps/api/geocode/json`,
-        {
-          params: { address: loc, key: 'YOUR_GOOGLE_API_KEY' },
-        }
-      );
-
-      if (response.data.status === 'OK' && response.data.results.length > 0) {
-        // You can handle geocoding results here if needed
-      } else {
-        alert('Location not found');
-      }
-    } catch (error) {
-      alert('Failed to locate address');
-    }
-  };
-
   const handlePost = () => {
     if (
       !price ||
@@ -99,6 +78,16 @@ export default function CreatePost() {
     alert('Form validated! (No backend submission in this version)');
   };
 
+  const handleCancel = () => {
+    setImages([]);
+    setPrice('');
+    setCategory('');
+    setDescription('');
+    setLocation('');
+    setContact('');
+    alert('Form cleared!');
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.heading}>Create New Post</Text>
@@ -112,11 +101,7 @@ export default function CreatePost() {
 
       <View style={styles.imageButtonsRow}>
         <View style={styles.imageButtonWrapper}>
-          <Button
-            title="Pick Images"
-            onPress={pickImagesFromAlbum}
-            color="#7B3FE4"
-          />
+          <Button title="Pick Image" onPress={pickImagesFromAlbum} color="#7B3FE4" />
         </View>
         <View style={styles.imageButtonWrapper}>
           <Button title="Take Photo" onPress={takePhoto} color="#7B3FE4" />
@@ -163,26 +148,42 @@ export default function CreatePost() {
         style={styles.input}
         placeholder="Enter location"
         value={location}
-        onChangeText={(text) => setLocation(text)}
-        onBlur={() => geocodeLocation(location)}
+        onChangeText={setLocation}
         placeholderTextColor="#666"
       />
 
-      <Text style={styles.label}>Contact Info</Text>
-      <TextInput
+        <Text style={styles.label}>Email</Text>
+        <TextInput
         style={styles.input}
-        placeholder="Enter contact details"
-        value={contact}
-        onChangeText={setContact}
+        placeholder="Enter email"
+        value={email}
+        onChangeText={setEmail}
+        keyboardType="email-address"
+        autoCapitalize="none"
         placeholderTextColor="#666"
-      />
+        />
+
+        <Text style={styles.label}>Contact Info</Text>
+        <TextInput
+        style={styles.input}
+        placeholder="Enter 10-digit phone number"
+        value={contact}
+        onChangeText={(text) => {
+            // Allow only digits
+            const cleaned = text.replace(/[^0-9]/g, '');
+            setContact(cleaned);
+        }}
+        keyboardType="numeric"
+        maxLength={10}
+        placeholderTextColor="#666"
+        />
 
       <View style={styles.buttonRow}>
-        <TouchableOpacity style={styles.postButton} onPress={handlePost}>
-          <Text style={styles.postButtonText}>Post</Text>
+        <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
+          <Text style={styles.buttonText}>Cancel</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.connectButton}>
-          <Text style={styles.connectButtonText}>Connect</Text>
+        <TouchableOpacity style={styles.postButton} onPress={handlePost}>
+          <Text style={styles.buttonText}>Post</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -258,7 +259,7 @@ const styles = StyleSheet.create({
   buttonRow: {
     flexDirection: 'row',
     marginTop: 30,
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     gap: 10,
   },
   postButton: {
@@ -268,19 +269,14 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
   },
-  postButtonText: {
-    color: 'white',
-    fontWeight: '700',
-    fontSize: 22,
-  },
-  connectButton: {
+  cancelButton: {
     backgroundColor: '#7B3FE4',
     paddingVertical: 14,
     borderRadius: 8,
     flex: 1,
     alignItems: 'center',
   },
-  connectButtonText: {
+  buttonText: {
     color: 'white',
     fontWeight: '700',
     fontSize: 22,

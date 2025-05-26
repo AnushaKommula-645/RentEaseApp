@@ -124,14 +124,19 @@ export default function HomeScreen({ navigation }) {
             <View style={styles.categoryRow}>
               {filteredCategories.map((cat) => (
                 <TouchableOpacity
-                  key={cat.id}
-                  style={styles.categoryCard}
-                  onPress={() => navigation.navigate('HiScreen', { category: cat.title })}
+                    key={cat.id}
+                    style={styles.categoryCard}
+                    onPress={() => {
+                    if (cat.title === 'Houses') navigation.navigate('HouseScreen');
+                    else if (cat.title === 'Lands') navigation.navigate('LandScreen');
+                    else if (cat.title === 'Shops') navigation.navigate('ShopScreen');
+                    else if (cat.title === 'Parking') navigation.navigate('ParkScreen');
+                    }}
                 >
-                  <Image source={cat.image} style={styles.categoryImage} resizeMode="cover" />
-                  <Text style={styles.categoryTitle}>{cat.title}</Text>
+                    <Image source={cat.image} style={styles.categoryImage} resizeMode="cover" />
+                    <Text style={styles.categoryTitle}>{cat.title}</Text>
                 </TouchableOpacity>
-              ))}
+                ))}
               {filteredCategories.length === 0 && (
                 <Text style={{ color: COLORS.darkText, fontSize: 16, marginTop: 10 }}>
                   No matching categories found.
