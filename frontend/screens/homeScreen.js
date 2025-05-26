@@ -166,7 +166,7 @@ export default function HomeScreen({ navigation }) {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.navButton}
-          onPress={() => navigation.navigate('HiScreen')}
+          onPress={() => navigation.navigate('PostScreen')}
         >
           <Image source={require('../assets/posticon.jpg')} style={styles.navIcon} />
         </TouchableOpacity>

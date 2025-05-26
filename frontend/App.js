@@ -7,6 +7,7 @@ import LoginScreen from "./screens/loginScreen";
 import HiScreen from "./screens/hiScreen";
 //import AdminScreen from "./screens/adminScreen";
 import HomeScreen from "./screens/homeScreen";
+import PostScreen from "./screens/postScreen";
 //import UserAccountScreen from "./screens/userAccountScreen";
 
 
@@ -22,6 +23,7 @@ export default function App() {
         <Stack.Screen name="HiScreen" component={HiScreen} />
         {/* <Stack.Screen name="AdminScreen" component={AdminScreen} /> */}
         <Stack.Screen name="HomeScreen" component={HomeScreen} />
+        <Stack.Screen name="PostScreen" component={PostScreen} />
         {/* <Stack.Screen name="UserAccountScreen" component={UserAccountScreen} /> */}
       </Stack.Navigator>
     </NavigationContainer>
