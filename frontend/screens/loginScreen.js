@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Image,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState("");
@@ -26,7 +27,11 @@ export default function LoginScreen({ navigation }) {
   const handleLogin = () => {
     setSubmitted(true);
     if (isFormValid()) {
-      navigation.navigate("HomeScreen");
+      if (email === "admin123@gmail.com" && password === "1234") {
+        navigation.navigate("AdminScreen");
+      } else {
+        navigation.navigate("HomeScreen");
+      }
     }
   };
 

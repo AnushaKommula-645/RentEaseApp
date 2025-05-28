@@ -177,7 +177,7 @@ export default function HomeScreen({ navigation }) {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.navButton}
-          onPress={() => navigation.navigate('HiScreen')}
+          onPress={() => navigation.navigate('AccountScreen')}
         >
           <Image source={require('../assets/accounticon.jpg')} style={styles.navIcon} />
         </TouchableOpacity>

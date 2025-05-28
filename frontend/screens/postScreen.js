@@ -2,6 +2,8 @@ import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import {
   Button,
   Image,
@@ -85,11 +87,19 @@ export default function CreatePost() {
     setDescription('');
     setLocation('');
     setContact('');
+    setEmail('');
     alert('Form cleared!');
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      <TouchableOpacity
+                style={styles.navButton}
+                onPress={() => navigation.navigate('HomeScreen')}
+              >
+        <Text style={styles.navTitle}>⬅back</Text>
+      </TouchableOpacity>
+
       <Text style={styles.heading}>Create New Post</Text>
 
       <Text style={styles.label}>Images</Text>
@@ -152,8 +162,8 @@ export default function CreatePost() {
         placeholderTextColor="#666"
       />
 
-        <Text style={styles.label}>Email</Text>
-        <TextInput
+      <Text style={styles.label}>Email</Text>
+      <TextInput
         style={styles.input}
         placeholder="Enter email"
         value={email}
@@ -161,22 +171,21 @@ export default function CreatePost() {
         keyboardType="email-address"
         autoCapitalize="none"
         placeholderTextColor="#666"
-        />
+      />
 
-        <Text style={styles.label}>Contact Info</Text>
-        <TextInput
+      <Text style={styles.label}>Contact Info</Text>
+      <TextInput
         style={styles.input}
         placeholder="Enter 10-digit phone number"
         value={contact}
         onChangeText={(text) => {
-            // Allow only digits
-            const cleaned = text.replace(/[^0-9]/g, '');
-            setContact(cleaned);
+          const cleaned = text.replace(/[^0-9]/g, '');
+          setContact(cleaned);
         }}
         keyboardType="numeric"
         maxLength={10}
         placeholderTextColor="#666"
-        />
+      />
 
       <View style={styles.buttonRow}>
         <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
@@ -195,6 +204,14 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 40,
     backgroundColor: '#F3E8FF',
+  },
+  backButton: {
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  backText: {
+    color: '#7B3FE4',
+    fontSize: 18,
   },
   heading: {
     fontSize: 34,
@@ -250,7 +267,6 @@ const styles = StyleSheet.create({
     borderColor: '#B39DDB',
     borderRadius: 8,
     backgroundColor: '#fff',
-    marginHorizontal: 0,
   },
   picker: {
     height: 50,
@@ -281,4 +297,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: 22,
   },
+  navTitle: {
+  justifyContent: 'center',
+  color: 'black',
+  marginTop: 12,
+  alignItems: 'left',
+  padding: 10,
+  },
+
+  navButton: { alignItems: 'left' },
 });

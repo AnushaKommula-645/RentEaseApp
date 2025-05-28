@@ -95,7 +95,7 @@ const PostListScreen = () => {
         <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate('PostScreen')}>
           <Image source={require('../assets/posticon.jpg')} style={styles.navIcon} />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate('HiScreen')}>
+        <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate('AccountScreen')}>
           <Image source={require('../assets/accounticon.jpg')} style={styles.navIcon} />
         </TouchableOpacity>
       </View>

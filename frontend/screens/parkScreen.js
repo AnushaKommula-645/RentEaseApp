@@ -76,7 +76,7 @@ const PostListScreen = () => {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
-        <Text style={styles.navTitle}>Posts</Text>
+        <Text style={styles.navTitle}>⬅Posts</Text>
       </View>
 
       {/* Main Content */}
@@ -95,7 +95,7 @@ const PostListScreen = () => {
         <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate('PostScreen')}>
           <Image source={require('../assets/posticon.jpg')} style={styles.navIcon} />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate('HiScreen')}>
+        <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate('AccountScreen')}>
           <Image source={require('../assets/accounticon.jpg')} style={styles.navIcon} />
         </TouchableOpacity>
       </View>
