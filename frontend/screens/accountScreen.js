@@ -3,11 +3,12 @@ import { View, Text, Image, FlatList, TouchableOpacity, StyleSheet, Alert, SafeA
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 
+
 // Mock user data
 const user = {
   name: 'Anusha',
-  email: 'anusha@example.com',
-  phone: '9876543210',
+  email: 'anusha@example.com ',
+  phone: '9876543210 ',
 };
 
 // Sample posts with images
@@ -253,3 +254,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
+
+
+
+
+

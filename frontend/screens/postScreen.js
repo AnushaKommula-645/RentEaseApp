@@ -15,7 +15,7 @@ import {
   View,
 } from 'react-native';
 
-const categories = ['Houses', 'Lands', 'Shops'];
+const categories = ['Houses', 'Lands', 'Shops', 'Parking'];
 
 export default function CreatePost() {
   const router = useRouter();

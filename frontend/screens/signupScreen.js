@@ -28,13 +28,30 @@ export default function SignupScreen({ navigation }) {
     );
   };
 
-  const handleSignup = () => {
-    setSubmitted(true);
-    if (isFormValid()) {
-      alert("Signup details validated!");
-      navigation.navigate("LoginScreen");
+const handleSignup = async () => {
+  setSubmitted(true);
+  if (isFormValid()) {
+    try {
+      const response = await fetch("http://192.168.0.100:5000/api/users/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userName, phone, email, password })
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        alert("Signup successful!");
+        navigation.navigate("LoginScreen");
+      } else {
+        alert(data.message);
+      }
+    } catch (err) {
+      console.error("Signup error:", err);
+      alert("An error occurred");
     }
-  };
+  }
+};
+
 
   return (
     <View style={styles.container}>

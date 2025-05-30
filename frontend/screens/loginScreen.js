@@ -8,6 +8,8 @@ import {
   Image,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState("");
@@ -24,16 +26,49 @@ export default function LoginScreen({ navigation }) {
     return email.trim() !== "" && isValidEmail(email) && password.trim() !== "";
   };
 
-  const handleLogin = () => {
-    setSubmitted(true);
-    if (isFormValid()) {
+const handleLogin = async () => {
+  setSubmitted(true);
+
+  if (!isFormValid()) return;
+
+  try {
+    const response = await fetch("http://192.168.0.100:5000/api/users/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      await storeUserEmail(data.email);
+      
+      // Check for admin
       if (email === "admin123@gmail.com" && password === "1234") {
         navigation.navigate("AdminScreen");
       } else {
         navigation.navigate("HomeScreen");
       }
+    } else {
+      alert(data.message || "Invalid credentials");
     }
-  };
+  } catch (err) {
+    console.error("Login error:", err);
+    alert("Something went wrong. Please try again.");
+  }
+};
+
+
+
+  const storeUserEmail = async (email) => {
+  try {
+    await AsyncStorage.setItem('userEmail', email);
+    console.log('Email stored after login');
+  } catch (e) {
+    console.error('Error storing email:', e);
+  }
+};
+
 
   return (
     <View style={styles.container}>
