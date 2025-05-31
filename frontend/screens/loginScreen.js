@@ -1,15 +1,15 @@
-import React, { useState } from "react";
+import { useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
-  View,
+  Button,
+  Image,
+  ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  Image,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
+  View,
+} from 'react-native';
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState("");
@@ -28,7 +28,6 @@ export default function LoginScreen({ navigation }) {
 
 const handleLogin = async () => {
   setSubmitted(true);
-
   if (!isFormValid()) return;
 
   try {
@@ -41,9 +40,16 @@ const handleLogin = async () => {
     const data = await response.json();
 
     if (response.ok) {
-      await storeUserEmail(data.email);
-      
-      // Check for admin
+      const userEmail = data.user?.email;
+      const userToken = data.token;
+
+      if (!userEmail || !userToken) {
+        throw new Error("Login response missing email or token");
+      }
+
+      await AsyncStorage.setItem('userToken', userToken);
+      await AsyncStorage.setItem('userEmail', userEmail);
+
       if (email === "admin123@gmail.com" && password === "1234") {
         navigation.navigate("AdminScreen");
       } else {
@@ -59,16 +65,18 @@ const handleLogin = async () => {
 };
 
 
-
-  const storeUserEmail = async (email) => {
-  try {
-    await AsyncStorage.setItem('userEmail', email);
-    console.log('Email stored after login');
-  } catch (e) {
-    console.error('Error storing email:', e);
-  }
-};
-
+  const storeUserEmail = async (emailToStore) => {
+    try {
+      if (emailToStore) {
+        await AsyncStorage.setItem('userEmail', emailToStore);
+        console.log('Email stored after login');
+      } else {
+        console.warn('Attempted to store undefined email');
+      }
+    } catch (e) {
+      console.error('Error storing email:', e);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -115,10 +123,7 @@ const handleLogin = async () => {
 
       {/* Login Button */}
       <TouchableOpacity
-        style={[
-          styles.button,
-          !isFormValid() && styles.disabledButton,
-        ]}
+        style={[styles.button, !isFormValid() && styles.disabledButton]}
         onPress={handleLogin}
         disabled={!isFormValid()}
       >

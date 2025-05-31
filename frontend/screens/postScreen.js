@@ -1,9 +1,8 @@
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   Button,
   Image,
@@ -28,56 +27,121 @@ export default function CreatePost() {
   const [contact, setContact] = useState('');
   const [email, setEmail] = useState('');
 
+  useEffect(() => {
+    (async () => {
+      const mediaStatus = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      const cameraStatus = await ImagePicker.requestCameraPermissionsAsync();
+      if (mediaStatus.status !== 'granted' || cameraStatus.status !== 'granted') {
+        alert('Camera and media permissions are required to post images.');
+      }
+
+      const storedEmail = await AsyncStorage.getItem('userEmail');
+      if (storedEmail) {
+        setEmail(storedEmail);
+      } else {
+        console.warn('No email found in storage');
+      }
+    })();
+  }, []);
+
   const pickImagesFromAlbum = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      alert('Permission to access gallery is required!');
-      return;
-    }
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 1,
+        allowsEditing: false,
+      });
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 1,
-      allowsEditing: false,
-    });
-
-    if (!result.canceled) {
-      const selectedUri = result.assets[0].uri;
-      setImages((prev) => [...prev, selectedUri]);
+      if (!result.canceled) {
+        const selectedUri = result.assets[0].uri;
+        setImages((prev) => [...prev, selectedUri]);
+      }
+    } catch (error) {
+      console.error('Image picking error:', error);
     }
   };
+
 
   const takePhoto = async () => {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== 'granted') {
-      alert('Permission to access camera is required!');
-      return;
-    }
+    try {
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 1,
+        allowsEditing: false,
+      });
 
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 1,
-      allowsEditing: false,
-    });
-
-    if (!result.canceled) {
-      setImages((prev) => [...prev, result.assets[0].uri]);
+      if (!result.canceled) {
+        setImages((prev) => [...prev, result.assets[0].uri]);
+      }
+    } catch (error) {
+      console.error('Camera error:', error);
     }
   };
 
-  const handlePost = () => {
+
+  const handlePost = async () => {
     if (
       !price ||
       !category ||
       !description ||
       !location ||
       !contact ||
+      !email ||
       images.length === 0
     ) {
       alert('Please fill in all fields and select at least one image.');
       return;
     }
-    alert('Form validated! (No backend submission in this version)');
+
+    const formData = new FormData();
+    formData.append('price', price);
+    formData.append('category', category);
+    formData.append('description', description);
+    formData.append('location', location);
+    formData.append('email', email);
+    formData.append('contact', contact);
+
+    images.forEach((uri, index) => {
+      const filename = uri.split('/').pop();
+      const match = /\.(\w+)$/.exec(filename ?? '');
+      const type = match ? `image/${match[1]}` : 'image';
+
+      formData.append('images', {
+        uri,
+        name: filename,
+        type,
+      });
+    });
+
+    try {
+      const token = await AsyncStorage.getItem('userToken'); // ✅ FIXED
+
+      if (!token) {
+        alert('You are not logged in. Please log in to create a post.');
+        return;
+      }
+
+      const response = await fetch('http://192.168.0.100:5000/api/posts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        alert('Post created successfully!');
+        handleCancel();
+      } else {
+        console.error(data);
+        alert(`Failed to create post: ${data.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Error submitting post. Please try again.');
+    }
   };
 
   const handleCancel = () => {
@@ -87,17 +151,12 @@ export default function CreatePost() {
     setDescription('');
     setLocation('');
     setContact('');
-    setEmail('');
-    alert('Form cleared!');
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <TouchableOpacity
-                style={styles.navButton}
-                onPress={() => navigation.navigate('HomeScreen')}
-              >
-        <Text style={styles.navTitle}>⬅back</Text>
+      <TouchableOpacity style={styles.navButton} onPress={() => router.back()}>
+        <Text style={styles.navTitle}>⬅ back</Text>
       </TouchableOpacity>
 
       <Text style={styles.heading}>Create New Post</Text>
@@ -164,12 +223,11 @@ export default function CreatePost() {
 
       <Text style={styles.label}>Email</Text>
       <TextInput
-        style={styles.input}
-        placeholder="Enter email"
+        style={[styles.input, { backgroundColor: '#eee' }]}
+        placeholder="Email"
         value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
+        editable={false}
+        selectTextOnFocus={false}
         placeholderTextColor="#666"
       />
 
@@ -204,14 +262,6 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 40,
     backgroundColor: '#F3E8FF',
-  },
-  backButton: {
-    marginTop: 20,
-    marginBottom: 10,
-  },
-  backText: {
-    color: '#7B3FE4',
-    fontSize: 18,
   },
   heading: {
     fontSize: 34,
@@ -298,12 +348,12 @@ const styles = StyleSheet.create({
     fontSize: 22,
   },
   navTitle: {
-  justifyContent: 'center',
-  color: 'black',
-  marginTop: 12,
-  alignItems: 'left',
-  padding: 10,
+    color: 'black',
+    marginTop: 12,
+    padding: 10,
+    fontSize: 18,
   },
-
-  navButton: { alignItems: 'left' },
+  navButton: {
+    alignItems: 'flex-start',
+  },
 });

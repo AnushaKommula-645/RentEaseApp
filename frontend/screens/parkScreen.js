@@ -76,7 +76,7 @@ const PostListScreen = () => {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
-        <Text style={styles.navTitle}>⬅Posts</Text>
+        <Text style={styles.navTitle}>Posts</Text>
       </View>
 
       {/* Main Content */}

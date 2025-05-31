@@ -1,0 +1,64 @@
+const express = require('express');
+const router = express.Router();
+const Post = require('../models/Post');
+const upload = require('../middleware/upload');
+const authMiddleware = require('../middleware/authMiddleware');
+
+// POST /api/posts
+router.post('/', authMiddleware, upload.array('images', 5), async (req, res) => {
+  try {
+    const { price, category, description, location, email, contact } = req.body;
+
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: 'At least one image is required.' });
+    }
+    if (!price || !category || !description || !location || !email || !contact) {
+      return res.status(400).json({ message: 'All fields are required.' });
+    }
+
+
+    const imagePaths = req.files.map(file => file.path);
+
+    const newPost = new Post({
+      user: req.user.id,
+      images: imagePaths,
+      price,
+      category,
+      description,
+      location,
+      contact,
+      email
+    });
+
+    await newPost.save();
+    res.status(201).json({ message: 'Post created successfully', post: newPost });
+  } catch (error) {
+    console.error('Post creation error:', error);
+    res.status(500).json({ message: 'Failed to create post' });
+  }
+});
+
+// GET /api/posts - fetch all posts
+router.get('/', async (req, res) => {
+  try {
+    const posts = await Post.find().populate('user', 'userName email');
+    res.status(200).json(posts);
+  } catch (err) {
+    console.error('Fetch posts error:', err);
+    res.status(500).json({ message: 'Failed to fetch posts' });
+  }
+});
+
+// GET /api/posts/:id - fetch a single post by ID
+router.get('/:id', async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id).populate('user', 'userName email');
+    if (!post) return res.status(404).json({ message: 'Post not found' });
+    res.status(200).json(post);
+  } catch (err) {
+    console.error('Fetch post by ID error:', err);
+    res.status(500).json({ message: 'Failed to fetch post' });
+  }
+});
+
+module.exports = router;

@@ -1,9 +1,12 @@
-// backend/server.js
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const path = require("path");
+const multer = require("multer"); // ✅ Added for error handling
+
 const userRoutes = require("./routes/UserRoutes");
+const postRoutes = require("./routes/postRoutes");
 
 dotenv.config();
 
@@ -14,8 +17,23 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+// Serve uploaded images statically
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // Routes
 app.use("/api/users", userRoutes);
+app.use("/api/posts", postRoutes);
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// ✅ Centralized error handler (Multer and others)
+app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError || err.message.includes('Only images')) {
+    return res.status(400).json({ error: err.message });
+  }
+
+  console.error('Server error:', err);
+  res.status(500).json({ error: 'Something went wrong' });
+});
 
 // MongoDB Connection
 mongoose
