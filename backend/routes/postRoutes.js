@@ -73,4 +73,26 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// Get posts by user email
+router.get('/user/:email', async (req, res) => {
+  try {
+    const posts = await Post.find({ email: req.params.email });
+    res.json(posts);
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Delete a post by ID (only for authenticated users)
+router.delete('/:id', authMiddleware, async (req, res) => {
+  try {
+    await Post.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Post deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete post' });
+  }
+});
+
+
+
 module.exports = router;

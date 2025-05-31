@@ -78,15 +78,29 @@ const ShopScreen = () => {
       </View>
 
       {/* Post List */}
-      <FlatList
+      {shops.length === 0 ? (
+        <View style={styles.noPostsContainer}>
+          <Text style={styles.noPostsText}>No shop posts available.</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={shops}
+          renderItem={renderItem}
+          keyExtractor={(item) => item._id}
+          contentContainerStyle={styles.container}
+        />
+      )}
+
+      {/* Post List */}
+      {/* <FlatList
         data={shops}
         renderItem={renderItem}
         keyExtractor={(item) => item._id}
         contentContainerStyle={styles.container}
-      />
+      /> */}
 
       {/* Bottom Navigation Bar */}
-      <View style={styles.bottomNav}>
+      {/* <View style={styles.bottomNav}>
         <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate('HomeScreen')}>
           <Image source={require('../assets/home.jpg')} style={styles.navIcon} />
         </TouchableOpacity>
@@ -96,7 +110,7 @@ const ShopScreen = () => {
         <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate('AccountScreen')}>
           <Image source={require('../assets/accounticon.jpg')} style={styles.navIcon} />
         </TouchableOpacity>
-      </View>
+      </View> */}
     </View>
   );
 };
@@ -182,6 +196,17 @@ const styles = StyleSheet.create({
     height: 55,
     resizeMode: 'contain',
   },
+  noPostsContainer: {
+    flex: 1,
+    justifyContent: 'center', // vertical center
+    alignItems: 'center',     // horizontal center
+  },
+  noPostsText: {
+    fontSize: 18,
+    color: '#555',
+    textAlign: 'center',      // ensures multi-line text stays centered
+  },
+
 });
 
 export default ShopScreen;

@@ -40,7 +40,8 @@ const handleLogin = async () => {
     const data = await response.json();
 
     if (response.ok) {
-      const userEmail = data.user?.email;
+      const userEmail = data.email;
+
       const userToken = data.token;
 
       if (!userEmail || !userToken) {
@@ -65,18 +66,18 @@ const handleLogin = async () => {
 };
 
 
-  const storeUserEmail = async (emailToStore) => {
-    try {
-      if (emailToStore) {
-        await AsyncStorage.setItem('userEmail', emailToStore);
-        console.log('Email stored after login');
-      } else {
-        console.warn('Attempted to store undefined email');
-      }
-    } catch (e) {
-      console.error('Error storing email:', e);
-    }
-  };
+  // const storeUserEmail = async (emailToStore) => {
+  //   try {
+  //     if (emailToStore) {
+  //       await AsyncStorage.setItem('userEmail', emailToStore);
+  //       console.log('Email stored after login');
+  //     } else {
+  //       console.warn('Attempted to store undefined email');
+  //     }
+  //   } catch (e) {
+  //     console.error('Error storing email:', e);
+  //   }
+  // };
 
   return (
     <View style={styles.container}>
