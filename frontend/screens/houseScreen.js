@@ -9,19 +9,19 @@ import {
   Linking,
   ActivityIndicator,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
 const HouseScreen = () => {
   const [houses, setHouses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigation = useNavigation();
 
   useEffect(() => {
     const fetchHouses = async () => {
       try {
         const response = await fetch('http://192.168.0.100:5000/api/posts/category/Houses');
-
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
+        if (!response.ok) throw new Error('Network response was not ok');
         const data = await response.json();
         setHouses(data);
       } catch (error) {
@@ -46,16 +46,13 @@ const HouseScreen = () => {
           style={styles.image}
         />
       )}
-      <Text style={styles.title}>Price: {item.price}</Text>
+      <Text style={styles.title}>Price: ₹{item.price}</Text>
       <Text style={styles.description}>Description: {item.description}</Text>
-      <Text style={styles.info}>Location: {item.location}</Text>
-      <Text style={styles.info}>Email: {item.email}</Text>
-      <Text style={styles.info}>Contact: {item.contact}</Text>
+      <Text style={styles.info}>📍{item.location}</Text>
+      <Text style={styles.info}>📧 {item.email}</Text>
+      <Text style={styles.info}>☎ {item.contact}</Text>
 
-      <TouchableOpacity
-        style={styles.callButton}
-        onPress={() => handleCall(item.contact)}
-      >
+      <TouchableOpacity style={styles.callButton} onPress={() => handleCall(item.contact)}>
         <Text style={styles.callText}>Call</Text>
       </TouchableOpacity>
     </View>
@@ -71,18 +68,57 @@ const HouseScreen = () => {
   }
 
   return (
-    <FlatList
-      data={houses}
-      renderItem={renderItem}
-      keyExtractor={(item) => item._id}
-      contentContainerStyle={styles.container}
-    />
+    <View style={{ flex: 1 }}>
+      {/* Top Navigation Bar */}
+      <View style={styles.topNav}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={24} color="#fff" />
+        </TouchableOpacity>
+        <Text style={styles.navTitle}>Houses</Text>
+      </View>
+
+      {/* Post List */}
+      <FlatList
+        data={houses}
+        renderItem={renderItem}
+        keyExtractor={(item) => item._id}
+        contentContainerStyle={styles.container}
+      />
+
+      {/* Bottom Navigation Bar */}
+      <View style={styles.bottomNav}>
+        <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate('HomeScreen')}>
+          <Image source={require('../assets/home.jpg')} style={styles.navIcon} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate('PostScreen')}>
+          <Image source={require('../assets/posticon.jpg')} style={styles.navIcon} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate('AccountScreen')}>
+          <Image source={require('../assets/accounticon.jpg')} style={styles.navIcon} />
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  topNav: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#541890',
+    paddingHorizontal: 16,
+    paddingVertical: 40,
+  },
+  navTitle: {
+    color: '#fff',
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginLeft: 153,
+    
+  },
   container: {
     padding: 10,
+    paddingBottom: 80, // So content doesn’t hide behind bottom nav
     backgroundColor: '#f9f9f9',
   },
   card: {
@@ -115,6 +151,7 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
   callButton: {
+    width: '30%',
     marginTop: 10,
     backgroundColor: '#28a745',
     padding: 10,
@@ -129,6 +166,22 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  bottomNav: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    backgroundColor: '#fff',
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderColor: '#ccc',
+  },
+  navButton: {
+    alignItems: 'center',
+  },
+  navIcon: {
+    width: 55,
+    height: 55,
+    resizeMode: 'contain',
   },
 });
 
