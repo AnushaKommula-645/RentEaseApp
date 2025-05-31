@@ -4,7 +4,7 @@ const Post = require('../models/Post');
 const upload = require('../middleware/upload');
 const authMiddleware = require('../middleware/authMiddleware');
 
-// POST /api/posts
+// POST /api/posts - Create a new post
 router.post('/', authMiddleware, upload.array('images', 5), async (req, res) => {
   try {
     const { price, category, description, location, email, contact } = req.body;
@@ -12,12 +12,13 @@ router.post('/', authMiddleware, upload.array('images', 5), async (req, res) => 
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ message: 'At least one image is required.' });
     }
+
     if (!price || !category || !description || !location || !email || !contact) {
       return res.status(400).json({ message: 'All fields are required.' });
     }
 
-
-    const imagePaths = req.files.map(file => file.path);
+    // ✅ Store relative URLs instead of full file paths
+    const imagePaths = req.files.map(file => `uploads/${file.filename}`);
 
     const newPost = new Post({
       user: req.user.id,
@@ -38,7 +39,7 @@ router.post('/', authMiddleware, upload.array('images', 5), async (req, res) => 
   }
 });
 
-// GET /api/posts - fetch all posts
+// GET /api/posts - Fetch all posts
 router.get('/', async (req, res) => {
   try {
     const posts = await Post.find().populate('user', 'userName email');
@@ -49,7 +50,18 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /api/posts/:id - fetch a single post by ID
+// GET /api/posts/category/:category - Fetch posts by category
+router.get('/category/:category', async (req, res) => {
+  try {
+    const posts = await Post.find({ category: req.params.category });
+    res.json(posts);
+  } catch (err) {
+    console.error('Fetch posts by category error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// GET /api/posts/:id - Fetch a single post by ID
 router.get('/:id', async (req, res) => {
   try {
     const post = await Post.findById(req.params.id).populate('user', 'userName email');
