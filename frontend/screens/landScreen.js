@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../config';
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -20,7 +21,7 @@ const LandScreen = () => {
   useEffect(() => {
     const fetchLands = async () => {
       try {
-        const response = await fetch('http://192.168.0.100:5000/api/posts/category/Lands');
+        const response = await fetch(`${API_BASE_URL}/api/posts/category/Lands`);
         if (!response.ok) throw new Error('Network response was not ok');
         const data = await response.json();
         setLands(data);
@@ -42,7 +43,7 @@ const LandScreen = () => {
     <View style={styles.card}>
       {item.images && item.images.length > 0 && (
         <Image
-          source={{ uri: `http://192.168.0.100:5000/${item.images[0].replace(/\\/g, '/')}` }}
+          source={{ uri: `${API_BASE_URL}/${item.images[0].replace(/\\/g, '/')}` }}
           style={styles.image}
         />
       )}

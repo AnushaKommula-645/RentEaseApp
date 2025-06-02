@@ -77,7 +77,7 @@ export default function HomeScreen({ navigation }) {
         <Text style={styles.logo}></Text>
         <TextInput
           style={styles.searchBar}
-          placeholder="Search properties, locations..."
+          placeholder="Search properties here..."
           value={search}
           onChangeText={setSearch}
           placeholderTextColor="#999"
@@ -134,7 +134,7 @@ export default function HomeScreen({ navigation }) {
                     }}
                 >
                     <Image source={cat.image} style={styles.categoryImage} resizeMode="cover" />
-                    <Text style={styles.categoryTitle}>{cat.title}</Text>
+                    <Text style={styles.categoryTitle}>{cat.title} </Text>
                 </TouchableOpacity>
                 ))}
               {filteredCategories.length === 0 && (
@@ -173,7 +173,7 @@ export default function HomeScreen({ navigation }) {
           style={styles.navButton}
           onPress={() => navigation.navigate('PostScreen')}
         >
-          <Image source={require('../assets/posticon.jpg')} style={styles.navIcon} />
+          <Image source={require('../assets/posticon.png')} style={styles.navIcon} />
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.navButton}

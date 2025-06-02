@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../config';
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -28,7 +29,7 @@ export default function AccountScreen() {
       const email = await AsyncStorage.getItem('userEmail');
       if (!token || !email) throw new Error('User not authenticated');
 
-      const profileRes = await fetch("http://192.168.0.100:5000/api/users/me", {
+      const profileRes = await fetch(`${API_BASE_URL}/api/users/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -36,7 +37,7 @@ export default function AccountScreen() {
       if (!profileRes.ok) throw new Error(profileData.message);
       setUser(profileData);
 
-      const postsRes = await fetch(`http://192.168.0.100:5000/api/posts/user/${email}`);
+      const postsRes = await fetch(`${API_BASE_URL}/api/posts/user/${email}`);
       const postsData = await postsRes.json();
       if (!postsRes.ok) throw new Error(postsData.message);
       setPosts(postsData);
@@ -53,7 +54,7 @@ export default function AccountScreen() {
       const token = await AsyncStorage.getItem('userToken');
       if (!token) throw new Error('Authentication token missing');
 
-      const res = await fetch(`http://192.168.0.100:5000/api/posts/${postId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/posts/${postId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -72,7 +73,12 @@ export default function AccountScreen() {
   const handleLogout = async () => {
     await AsyncStorage.removeItem('userToken');
     await AsyncStorage.removeItem('userEmail');
-    navigation.replace('LoginScreen');
+
+    // Reset navigation to LoginScreen
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'LoginScreen' }],
+    });
   };
 
   if (loading) {
@@ -117,7 +123,7 @@ export default function AccountScreen() {
             <View key={post._id} style={styles.postCard}>
               {post.images?.[0] && (
                 <Image
-                  source={{ uri: `http://192.168.0.100:5000/${post.images[0]}` }}
+                  source={{ uri: `${API_BASE_URL}/${post.images[0]}` }}
                   style={styles.postImage}
                 />
               )}
@@ -140,7 +146,7 @@ export default function AccountScreen() {
                 }
                 style={styles.deleteButton}
               >
-                <Text style={styles.deleteText}>🗑️ Delete</Text>
+                <Text style={styles.deleteText}> Delete </Text>
               </TouchableOpacity>
             </View>
           ))
@@ -239,6 +245,7 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     marginTop: 10,
+    width: '30%',
     alignItems: 'center',
     backgroundColor: '#ff4d4d',
     paddingVertical: 6,

@@ -1,102 +1,191 @@
-import React, { useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { API_BASE_URL } from '../config';
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  Alert,
+  StyleSheet,
+  SafeAreaView
+} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const AllUsersScreen = () => {
-  const [users, setUsers] = useState([
-    {
-      id: 'u1',
-      name: 'Anusha',
-      email: 'anusha@example.com',
-      posts: [{ id: 'p1' }, { id: 'p2' }],
-    },
-    {
-      id: 'u2',
-      name: 'Sneha',
-      email: 'sneha@example.com',
-      posts: [{ id: 'p3' }],
-    },
-  ]);
+const AdminScreen = ({ navigation }) => {
+  const [users, setUsers] = useState([]);
 
-  const handleDeleteUser = (userId) => {
-    Alert.alert('Delete User', 'Are you sure you want to delete this user?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: () => setUsers(users.filter((u) => u.id !== userId)),
-      },
-    ]);
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/admin/users`);
+      const data = await res.json();
+      const filteredUsers = data.filter(user => user.email !== 'admin123@gmail.com'); // filter out admin
+      setUsers(filteredUsers);
+    } catch (error) {
+      console.error('Fetch users error:', error);
+    }
   };
 
+  const deleteUser = async (userId) => {
+    Alert.alert(
+      'Delete User',
+      'Are you sure you want to delete this user and all their posts?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const res = await fetch(`${API_BASE_URL}/api/admin/user/${userId}`, {
+                method: 'DELETE'
+              });
+              const data = await res.json();
+              Alert.alert('Deleted', data.message);
+              fetchUsers();
+            } catch (error) {
+              Alert.alert('Error', 'Failed to delete user');
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const handleLogout = async () => {
+    await AsyncStorage.removeItem('userToken');
+    await AsyncStorage.removeItem('userEmail');
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'LoginScreen' }],
+    });
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const renderItem = ({ item }) => (
+    <View style={styles.userCard}>
+      <Text style={styles.name}>{item.userName}</Text>
+      <Text style={styles.infoText}>📧 {item.email}</Text>
+      <Text style={styles.infoText}>📱 {item.phone}</Text>
+      <Text style={styles.infoText}>📝 Posts: {item.postCount}</Text>
+      <TouchableOpacity
+        style={styles.deleteButton}
+        onPress={() => deleteUser(item.id)}
+      >
+        <Text style={styles.deleteButtonText}>Delete User</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Admin Panel</Text>
+    <SafeAreaView style={styles.container}>
+      {/* Top Navbar */}
+      <View style={styles.navbarTop}>
+        <Text style={styles.navbarTitle}>Admin Dashboard</Text>
+        <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+          <Text style={styles.logoutText}>⎋</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* User List */}
       <FlatList
         data={users}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.userCard}>
-            <Text style={styles.name}>{item.name}</Text>
-            <Text style={styles.email}>{item.email}</Text>
-            <Text style={styles.posts}>Posts: {item.posts.length}</Text>
-            <TouchableOpacity
-              style={styles.deleteBtn}
-              onPress={() => handleDeleteUser(item.id)}
-            >
-              <Ionicons name="trash" size={18} color="#fff" />
-              <Text style={styles.deleteText}>Delete</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+        keyExtractor={item => item.id}
+        renderItem={renderItem}
+        contentContainerStyle={{ paddingBottom: 100 }}
+        ListEmptyComponent={<Text style={styles.emptyText}>No users found.</Text>}
       />
-    </View>
+
+      {/* Bottom Navbar */}
+      <View style={styles.navbarBottom}>
+        <Text style={styles.navbarText}>© RentEase Admin Panel</Text>
+      </View>
+    </SafeAreaView>
   );
 };
 
-export default AllUsersScreen;
+export default AdminScreen;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    paddingTop: 50,
-    paddingHorizontal: 16,
+    backgroundColor: '#f9fafb'
   },
-  header: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
+  navbarTop: {
+    height: 110,
+    backgroundColor: '#541890',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 40
+  },
+  navbarTitle: {
+    color: '#fff',
+    fontSize: 26,
+    fontWeight: 'bold'
+  },
+  logoutButton: {
+    padding: 8,
+    borderRadius: 6
+  },
+  logoutText: {
+    color: '#fff',
+    fontSize: 22
   },
   userCard: {
-    backgroundColor: '#f2f2f2',
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 16,
+    backgroundColor: '#fff',
+    marginHorizontal: 16,
+    marginTop: 12,
+    padding: 16,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 8,
+    elevation: 5
   },
   name: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#111827',
+    marginBottom: 4
   },
-  email: {
-    fontSize: 14,
-    color: '#555',
+  infoText: {
+    fontSize: 15,
+    color: '#374151',
+    marginVertical: 2
   },
-  posts: {
-    fontSize: 14,
-    marginVertical: 5,
+  deleteButton: {
+    marginTop: 12,
+    backgroundColor: '#ef4444',
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center'
   },
-  deleteBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#d11a2a',
-    padding: 8,
-    borderRadius: 6,
-    alignSelf: 'flex-start',
-  },
-  deleteText: {
+  deleteButtonText: {
     color: '#fff',
-    marginLeft: 6,
+    fontWeight: 'bold'
   },
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 30,
+    color: '#6b7280',
+    fontSize: 16
+  },
+  navbarBottom: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    height: 50,
+    backgroundColor: '#541890',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  navbarText: {
+    color: '#fff',
+    fontSize: 14
+  }
 });

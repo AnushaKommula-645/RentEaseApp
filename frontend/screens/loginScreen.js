@@ -1,14 +1,14 @@
-import { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config';
+import { useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
-  Button,
   Image,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
+  Alert,
 } from 'react-native';
 
 export default function LoginScreen({ navigation }) {
@@ -26,69 +26,53 @@ export default function LoginScreen({ navigation }) {
     return email.trim() !== "" && isValidEmail(email) && password.trim() !== "";
   };
 
-const handleLogin = async () => {
-  setSubmitted(true);
-  if (!isFormValid()) return;
+  const handleLogin = async () => {
+    setSubmitted(true);
+    if (!isFormValid()) return;
 
-  try {
-    const response = await fetch("http://192.168.0.100:5000/api/users/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/users/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (response.ok) {
-      const userEmail = data.email;
+      if (response.ok) {
+        const userEmail = data.email;
+        const userToken = data.token;
 
-      const userToken = data.token;
+        if (!userEmail || !userToken) {
+          throw new Error("Login response missing email or token");
+        }
 
-      if (!userEmail || !userToken) {
-        throw new Error("Login response missing email or token");
-      }
+        await AsyncStorage.setItem('userToken', userToken);
+        await AsyncStorage.setItem('userEmail', userEmail);
 
-      await AsyncStorage.setItem('userToken', userToken);
-      await AsyncStorage.setItem('userEmail', userEmail);
-
-      if (email === "admin123@gmail.com" && password === "1234") {
-        navigation.navigate("AdminScreen");
+        const lowerEmail = email.toLowerCase();
+        if (lowerEmail === "admin123@gmail.com" && password === "4321") {
+          navigation.navigate("AdminScreen");
+        } else {
+          navigation.navigate("HomeScreen");
+        }
       } else {
-        navigation.navigate("HomeScreen");
+        Alert.alert("Login Failed", data.message || "Invalid credentials");
       }
-    } else {
-      alert(data.message || "Invalid credentials");
+    } catch (err) {
+      console.error("Login error:", err);
+      Alert.alert("Error", "Something went wrong. Please try again.");
     }
-  } catch (err) {
-    console.error("Login error:", err);
-    alert("Something went wrong. Please try again.");
-  }
-};
-
-
-  // const storeUserEmail = async (emailToStore) => {
-  //   try {
-  //     if (emailToStore) {
-  //       await AsyncStorage.setItem('userEmail', emailToStore);
-  //       console.log('Email stored after login');
-  //     } else {
-  //       console.warn('Attempted to store undefined email');
-  //     }
-  //   } catch (e) {
-  //     console.error('Error storing email:', e);
-  //   }
-  // };
+  };
 
   return (
     <View style={styles.container}>
-      {/* Circular Logo */}
       <View style={styles.shadowContainer}>
         <Image source={require("../assets/rentEaseLogo.png")} style={styles.logo} />
       </View>
 
       <Text style={styles.title}>Login</Text>
 
-      {/* Email Input */}
       <TextInput
         style={styles.input}
         placeholder="Email"
@@ -105,7 +89,6 @@ const handleLogin = async () => {
         <Text style={styles.errorText}>Email is invalid</Text>
       )}
 
-      {/* Password Input */}
       <TextInput
         style={styles.input}
         placeholder="Password"
@@ -122,7 +105,6 @@ const handleLogin = async () => {
         <Text style={styles.errorText}>Password is required</Text>
       )}
 
-      {/* Login Button */}
       <TouchableOpacity
         style={[styles.button, !isFormValid() && styles.disabledButton]}
         onPress={handleLogin}
@@ -131,7 +113,6 @@ const handleLogin = async () => {
         <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
 
-      {/* Navigate to Signup Screen */}
       <TouchableOpacity onPress={() => navigation.navigate("SignupScreen")}>
         <Text style={styles.loginText}>
           Don’t have an account? <Text style={styles.loginLink}>Sign Up</Text>

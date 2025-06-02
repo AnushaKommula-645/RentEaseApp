@@ -7,6 +7,7 @@ const multer = require("multer"); // ✅ Added for error handling
 
 const userRoutes = require("./routes/UserRoutes");
 const postRoutes = require("./routes/postRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 
 dotenv.config();
 
@@ -24,6 +25,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use("/api/admin", adminRoutes);
 
 // ✅ Centralized error handler (Multer and others)
 app.use((err, req, res, next) => {

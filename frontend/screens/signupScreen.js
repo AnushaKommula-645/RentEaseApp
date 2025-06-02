@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../config';
 import React, { useState } from "react";
 import { 
   View, Text, TextInput, TouchableOpacity, StyleSheet, Image 
@@ -32,7 +33,7 @@ const handleSignup = async () => {
   setSubmitted(true);
   if (isFormValid()) {
     try {
-      const response = await fetch("http://192.168.0.100:5000/api/users/signup", {
+      const response = await fetch(`${API_BASE_URL}/api/users/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userName, phone, email, password })

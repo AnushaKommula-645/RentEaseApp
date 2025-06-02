@@ -1,9 +1,9 @@
+import { API_BASE_URL } from '../config';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
 import {
   Button,
   Image,
@@ -16,15 +16,7 @@ import {
 } from 'react-native';
 
 const categories = ['Houses', 'Lands', 'Shops', 'Parking'];
-const YourComponent = () => {
-  const router = useRouter();
 
-  return (
-    <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-      <Text style={styles.backButtonText}> ← </Text>
-    </TouchableOpacity>
-  );
-};
 export default function CreatePost() {
   const router = useRouter();
 
@@ -42,6 +34,13 @@ export default function CreatePost() {
       const cameraStatus = await ImagePicker.requestCameraPermissionsAsync();
       if (mediaStatus.status !== 'granted' || cameraStatus.status !== 'granted') {
         alert('Camera and media permissions are required to post images.');
+      }
+
+      const storedEmail = await AsyncStorage.getItem('userEmail');
+      if (storedEmail) {
+        setEmail(storedEmail);
+      } else {
+        console.warn('No email found in storage');
       }
     })();
   }, []);
@@ -63,6 +62,7 @@ export default function CreatePost() {
     }
   };
 
+
   const takePhoto = async () => {
     try {
       const result = await ImagePicker.launchCameraAsync({
@@ -79,6 +79,7 @@ export default function CreatePost() {
     }
   };
 
+
   const handlePost = async () => {
     if (
       !price ||
@@ -86,6 +87,7 @@ export default function CreatePost() {
       !description ||
       !location ||
       !contact ||
+      !email ||
       images.length === 0
     ) {
       alert('Please fill in all fields and select at least one image.');
@@ -113,9 +115,14 @@ export default function CreatePost() {
     });
 
     try {
-      const token = await AsyncStorage.getItem('token');
+      const token = await AsyncStorage.getItem('userToken'); 
 
-      const response = await fetch('http://192.168.0.100:5000/api/posts', {
+      if (!token) {
+        alert('You are not logged in. Please log in to create a post.');
+        return;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/posts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -145,18 +152,14 @@ export default function CreatePost() {
     setDescription('');
     setLocation('');
     setContact('');
-    setEmail('');
-    alert('Form cleared!');
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* Back Button */}
-      <TouchableOpacity onPress={() => router.goBack()} style={styles.backButton}>
-        <Text style={styles.backButtonText}> ← </Text>
-      </TouchableOpacity>
+      
       
       <Text style={styles.heading}>Create New Post</Text>
+
 
       <Text style={styles.label}>Images</Text>
       <View style={styles.imagesContainer}>
@@ -167,10 +170,10 @@ export default function CreatePost() {
 
       <View style={styles.imageButtonsRow}>
         <View style={styles.imageButtonWrapper}>
-          <Button title="Pick Image" onPress={pickImagesFromAlbum} color="#7B3FE4" />
+          <Button title="Pick Image" onPress={pickImagesFromAlbum} color="#541890" />
         </View>
         <View style={styles.imageButtonWrapper}>
-          <Button title="Take Photo" onPress={takePhoto} color="#7B3FE4" />
+          <Button title="Take Photo" onPress={takePhoto} color="#541890" />
         </View>
       </View>
 
@@ -220,12 +223,11 @@ export default function CreatePost() {
 
       <Text style={styles.label}>Email</Text>
       <TextInput
-        style={styles.input}
-        placeholder="Enter email"
+        style={[styles.input, { backgroundColor: '#eee' }]}
+        placeholder="Email"
         value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
+        editable={false}
+        selectTextOnFocus={false}
         placeholderTextColor="#666"
       />
 
@@ -261,19 +263,11 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
     backgroundColor: '#F3E8FF',
   },
-  backButton: {
-    marginTop: 20,
-    marginBottom: 10,
-  },
-  backButtonText: {
-    color: '#7B3FE4',
-    fontSize: 18,
-    fontWeight: '600',
-  },
   heading: {
     fontSize: 34,
+    marginTop: 22,
     fontWeight: 'bold',
-    color: '#7B3FE4',
+    color: '#541890',
     marginBottom: 20,
     textAlign: 'center',
   },
@@ -336,14 +330,14 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   postButton: {
-    backgroundColor: '#7B3FE4',
+    backgroundColor: '#541890',
     paddingVertical: 14,
     borderRadius: 8,
     flex: 1,
     alignItems: 'center',
   },
   cancelButton: {
-    backgroundColor: '#7B3FE4',
+    backgroundColor: '#541890',
     paddingVertical: 14,
     borderRadius: 8,
     flex: 1,
@@ -353,5 +347,38 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: '700',
     fontSize: 22,
+  },
+  navTitle: {
+    color: 'black',
+    marginTop: 12,
+    padding: 10,
+    fontSize: 18,
+  },
+  navButton: {
+    alignItems: 'flex-start',
+  },
+  navBar: {
+    height: 100,
+    backgroundColor: '#541890',
+    borderBottomWidth: 1,
+    borderColor: '#ccc',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    justifyContent: 'space-between',
+  },
+  backButton: {
+    padding: 5,
+  },
+  backButtonText: {
+    marginTop: 20,
+    fontSize: 24,
+    color: '#ffffff',
+  },
+  navTitle: {
+    fontSize: 30,
+    marginTop: 20,
+    fontWeight: 'bold',
+    color: '#ffffff',
   },
 });
